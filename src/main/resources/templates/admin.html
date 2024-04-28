@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>All Users</title>
+</head>
+
+<body>
+<h1>Страница администратора</h1>
+<p>Все пользователи</p>
+
+<table>
+
+  <tr>
+    <th>Id</th>
+    <th>Имя пользователя</th>
+    <th>Имя</th>
+    <th>Фамилия</th>
+    <th>Город</th>
+    <th>Возраст</th>
+
+  </tr>
+
+  <tr th:each="user : ${allUsers}">
+    <td th:text="${user.getId()}"></td>
+    <td th:text="${user.getUsername()}"></td>
+    <td th:text="${user.getName()}"></td>
+    <td th:text="${user.getSurname()}"></td>
+    <td th:text="${user.getCity()}"></td>
+    <td th:text="${user.getAge()}"></td>
+    <td>
+      <div th:each="role : ${user.getRoles()}"
+           th:text="${role.getName()}">
+      </div>
+    </td>
+    <td>
+      <form th:method="GET" th:action="@{/admin/edit/{id}(id=${user.getId()})}">
+        <input type="submit" value="ИЗМЕНЕНИЕ">
+      </form>
+    </td>
+    <td>
+      <form th:method="DELETE" th:action="@{/admin/delete/{id}(id=${user.getId()})}">
+        <input type="submit" value="УДАЛЕНИЕ"/>
+      </form>
+    </td>
+  </tr>
+</table>
+<br>
+<form th:action="@{/admin/new}" method="get">
+  <input type="submit" value="СОЗДАТЬ НОВОГО ПОЛЬЗОВАТЕЛЯ"/>
+</form>
+<br>
+<form th:action="@{/user}">
+  <input type="submit" value="ИНФОРМАЦИЯ О ПОЛЬЗОВАТЕЛЕ" th:method="get"/>
+</form>
+<br>
+<form th:action="@{/logout}" method="get">
+  <input type="submit" value="ВЫХОД"/>
+</form>
+
+</body>
+</html>

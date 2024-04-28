@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Update user</title>
+</head>
+<body>
+<h1>Редактировать пользователя</h1>
+
+<form th:method="PATCH" th:action="@{/admin/edit/{id}(id=${user.getId()})}" th:object="${user}">
+  <label for="username">Имя пользователя</label>
+  <input type="text" th:field="*{username}" id="username">
+  <div style="color: red" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Неправильное имя пользователя</div>
+  <br>
+  <label for="password">Пароль</label>
+  <input type="text" th:field="*{password}" id="password">
+  <div style="color: red" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Неправильный пароль</div>
+  <br>
+  <label for="name">Имя</label>
+  <input type="text" th:field="*{name}" id="name">
+  <br>
+  <label for="surname">Фамилия</label>
+  <input type="text" th:field="*{surname}" id="surname">
+  <br>
+  <label for="city">Город</label>
+  <input type="text" th:field="*{city}" id="city">
+  <br>
+  <label for="age">Возраст</label>
+  <input type="text" th:field="*{age}" id="age">
+  <br>
+
+  <label for="role">Статус</label>
+  <select th:field="*{roles}" th:type="text" id="role">
+    <option th:each="role : ${roles}"
+            th:value="${{role}}"
+            th:text="${role.getName()}">
+
+    </option>
+  </select>
+  <br>
+  <input type="submit" value="ИЗМЕНИТЬ">
+</form>
+</body>
