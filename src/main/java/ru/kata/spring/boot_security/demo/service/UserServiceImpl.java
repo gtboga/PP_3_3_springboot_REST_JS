@@ -2,83 +2,98 @@ package ru.kata.spring.boot_security.demo.service;
 
 
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kata.spring.boot_security.demo.dao.UserDAO;
-import ru.kata.spring.boot_security.demo.model.Role;
+import ru.kata.spring.boot_security.demo.dao.UserRepositories;
 import ru.kata.spring.boot_security.demo.model.User;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @Transactional
-public class UserServiceImpl implements UserService, UserDetailsService {
-
-    private final UserDAO userDAO;
-
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+public class UserServiceImpl implements UserService{
+    private final UserRepositories userRepositories;
 
     @Autowired
-    public UserServiceImpl(UserDAO userDAO, BCryptPasswordEncoder bCryptPasswordEncoder) {
-        this.userDAO = userDAO;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-    }
+    public UserServiceImpl(UserRepositories userRepositories) {
+        this.userRepositories = userRepositories;
 
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = findByUserName(username);
-        if (user == null) {
-            throw new UsernameNotFoundException(String.format("Пользователь с именем '%s' не найден", username));
-        }
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(), user.getPassword(), mapRolesToAuthorities(user.getRoles()));
-    }
-
-    private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<Role> roles) {
-        return roles.stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public User findByUsername(String email) {
+        return userRepositories.findByUsername(email);
+    }
+
+    @Override
+    @Transactional
     public void saveUser(User user) {
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        userDAO.save(user);
+        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
+        userRepositories.save(user);
     }
-
     @Override
-    public void updateUser(User updateUser) {
-        if (!updateUser.getPassword().equals(userDAO.getById(updateUser.getId()).getPassword())) {
-            updateUser.setPassword(bCryptPasswordEncoder.encode(updateUser.getPassword()));
-        }
-        userDAO.save(updateUser);
-    }
-
-    @Override
-    public void deleteUser(Integer id) {
-        userDAO.deleteById(id);
-    }
-
-    @Override
-    public User findByUserName(String username) {
-        return userDAO.findByUsername(username);
-    }
-
-    @Override
-    public User getUserById(Integer id) {
-        return userDAO.getById(id);
-    }
-
-    @Override
+    @Transactional(readOnly = true)
     public List<User> getAllUsers() {
-        return userDAO.findAll();
+        return userRepositories.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<User> getUserById(Long id) {
+        return userRepositories.findById(id);
+    }
+
+    @Override
+    @Transactional
+    public void adminRedactor(User user, Long id) {
+        Optional<User> optionalUser = userRepositories.findById(id);
+        if (optionalUser.isPresent()) {
+            User editUser = optionalUser.get();
+            editUser.setId(user.getId());
+            BeanUtils.copyProperties(user, editUser, "password");
+            if (!editUser.getPassword().equals(user.getPassword())) {
+                editUser.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
+            }
+            userRepositories.save(editUser);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User getUserByLogin(String email) {
+        return userRepositories.getUserByEmail(email);
+    }
+
+//    @Override
+//    @Transactional(readOnly = true)
+//    public User getUserByLogin(String login) {
+//        return userRepositories.getUserByLogin(login);
+//    }
+
+    @Override
+    public User findOne(Long id) {
+        return userRepositories.findById(id).get();
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        userRepositories.deleteById(id);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = findByUsername(email);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found");
+        }
+        return user;
     }
 }

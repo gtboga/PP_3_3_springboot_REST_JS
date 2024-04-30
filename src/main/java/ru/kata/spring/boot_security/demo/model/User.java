@@ -1,48 +1,137 @@
 package ru.kata.spring.boot_security.demo.model;
 
-import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 
-@Data
 @Entity
 @Table(name = "users")
-public class User implements UserDetails {
+public class User implements UserDetails{
 
     @Id
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @Column(name = "username")
-    private String username;
-
-    @Column(name = "password")
-    private String password;
-
+    //Валидация полей name, surName, department, salary через аннотации
     @Column(name = "name")
+    @NotEmpty(message = "Name should not be empty") // Имя не должно быть пустым
+    @Size(min = 2, max = 30, message = "Name should be between 2 and 30 characters") // имя от 2 до 30 символов
     private String name;
 
     @Column(name = "surname")
+    @NotEmpty(message = "SurName should not be empty") // Фамилия не должна быть пустым
+    @Size(min = 2, max = 30, message = "SurName should be between 2 and 30 characters") // Фамилия от 2 до 30 символов
     private String surname;
 
-    @Column(name = "city")
-    private String city;
+    @Column(name = "email", unique = true)
+    @NotEmpty(message = "Email should not be empty")
+    @Email
+    private String email;
 
-    @Column(name = "age")
-    private Integer age;
+    @Column(name = "password")
+    @NotEmpty(message = "Password should not be empty") //Пароль не должен быть пустой
+    @Size(min = 2, max = 100, message = "Password should be between 2 and 100 characters") // Пароль от 2 до 100 символов
+    private String password;
 
-    @ManyToMany
-    @JoinTable(name="user_roles", joinColumns = @JoinColumn(name="user_id"),
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinTable(name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
+    public User() {
+    }
+
+    public User(String name, String surname, String email, String password, Set<Role> roles) {
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.password = password;
+        this.roles = roles;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    public boolean isAdmin() {
+        for (Role role : roles) {
+            if (Objects.equals(role.getRoleName(), "ROLE_ADMIN")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", roles=" + roles +
+                '}';
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles;
+        return getRoles();
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
     }
 
     @Override
@@ -64,4 +153,5 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }

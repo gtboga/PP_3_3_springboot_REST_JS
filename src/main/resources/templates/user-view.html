@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>UserPage</title>
+    <title>UsersPage</title>
 </head>
 <body>
 <table>
@@ -33,6 +33,16 @@
     </tr>
     </tbody>
 </table>
+
+<br>
+
+<div sec:authorize="hasAuthority('ROLE_ADMIN')">
+    <form action="/admin/page" target="_self">
+        <button>Вернуться к пользователям</button>
+    </form>
+    <br>
+    <br>
+</div>
 
 <br>
 <br>
