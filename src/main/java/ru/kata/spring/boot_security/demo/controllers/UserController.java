@@ -1,5 +1,6 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,24 +15,19 @@ import java.security.Principal;
 @Controller
 @RequestMapping("/user")
 public class UserController {
-    private final UserServiceImpl userServiceImpl;
 
-    public UserController(UserServiceImpl userServiceImpl, RoleServiceImpl roleServiceImpl) {
-        this.userServiceImpl = userServiceImpl;
+    private final UserServiceImpl userService;
+
+
+    public UserController(UserServiceImpl userService) {
+        this.userService = userService;
     }
 
     @GetMapping("/page")
-    public String adminUserPage(@RequestParam("id") Long id, Model model, Principal principal) {
-        User user = userServiceImpl.getUserById(id).orElse(null);
-        model.addAttribute("user", user);
+    public String userPage(Model user, @AuthenticationPrincipal User userDetails) {
+        user.addAttribute("user", userService.getUserById(userDetails.getId())
+                .get());
         return "user-view";
     }
 
-    @GetMapping
-    public String userPage(Model model, Principal principal) {
-        String email = principal.getName(); // Получение электронной почты аутентифицированного пользователя
-        User user = userServiceImpl.getUserByLogin(email); // метод для получения пользователя по электронной почте
-        model.addAttribute("user", user);
-        return "user";
-    }
 }

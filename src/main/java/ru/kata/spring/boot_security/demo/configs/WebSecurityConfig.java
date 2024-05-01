@@ -26,15 +26,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
 
         http.authorizeRequests()
-                .antMatchers("/admin/**").hasRole("ADMIN") //доступ к этой странице возможен только с ролью ADMIN
-                .antMatchers("/user").hasRole("USER") //доступ к этой странице возможен только с ролью USER
-                .anyRequest().hasAnyRole("USER", "ADMIN") // ко всем остальным страницам доступ получают ADMIN и USER
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/", "/index/**").permitAll()
+                .anyRequest().hasAnyRole("USER", "ADMIN")
                 .and()
-                .formLogin().permitAll() // если мы не направляем на кастомную страницу логина и пароля, то Spring генерит стандартную
+                .formLogin()
                 .loginProcessingUrl("/authentication/login/check")
                 .successHandler(new SuccessUserHandler())
                 .and()
-                .logout().logoutSuccessUrl("/login"); // если делаем логаут, то направляем в /login
+                .logout().logoutSuccessUrl("/");
+
     }
 
     @Bean

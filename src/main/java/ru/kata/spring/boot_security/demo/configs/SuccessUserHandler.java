@@ -39,6 +39,6 @@ public class SuccessUserHandler implements AuthenticationSuccessHandler {
                 return;
             }
         }
-        redirectStrategy.sendRedirect(request, response, "/user");
+        redirectStrategy.sendRedirect(request, response, "/user/page");
     }
 }

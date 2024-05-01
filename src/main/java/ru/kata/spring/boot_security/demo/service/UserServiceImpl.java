@@ -20,7 +20,6 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService{
     private final UserRepositories userRepositories;
 
-    @Autowired
     public UserServiceImpl(UserRepositories userRepositories) {
         this.userRepositories = userRepositories;
 
@@ -38,6 +37,8 @@ public class UserServiceImpl implements UserService{
         user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
         userRepositories.save(user);
     }
+
+
     @Override
     @Transactional(readOnly = true)
     public List<User> getAllUsers() {
@@ -57,7 +58,10 @@ public class UserServiceImpl implements UserService{
         if (optionalUser.isPresent()) {
             User editUser = optionalUser.get();
             editUser.setId(user.getId());
-            BeanUtils.copyProperties(user, editUser, "password");
+            editUser.setName(user.getName());
+            editUser.setSurname(user.getSurname());
+            editUser.setEmail(user.getEmail());
+            editUser.setRoles(user.getRoles());
             if (!editUser.getPassword().equals(user.getPassword())) {
                 editUser.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
             }
@@ -67,25 +71,14 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional(readOnly = true)
-    public User getUserByLogin(String email) {
+    public User getUserByEmail(String email) {
         return userRepositories.getUserByEmail(email);
-    }
-
-//    @Override
-//    @Transactional(readOnly = true)
-//    public User getUserByLogin(String login) {
-//        return userRepositories.getUserByLogin(login);
-//    }
-
-    @Override
-    public User findOne(Long id) {
-        return userRepositories.findById(id).get();
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
-        userRepositories.deleteById(id);
+        userRepositories.delete(userRepositories.getById(id));
     }
 
     @Override

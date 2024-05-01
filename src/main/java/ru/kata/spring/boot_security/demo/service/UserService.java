@@ -20,11 +20,7 @@ public interface UserService extends UserDetailsService {
     Optional<User> getUserById(Long id);
 
     void adminRedactor(User user, Long id);
-//    User getUserByEmail(String email);
-
-    User getUserByLogin(String email);
-
-    User findOne(Long id);
+    User getUserByEmail(String email);
 
 
 }
