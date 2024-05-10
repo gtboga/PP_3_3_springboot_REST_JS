@@ -3,6 +3,7 @@ package ru.kata.spring.boot_security.demo.initializer;
 import org.springframework.stereotype.Component;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
+import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 import javax.annotation.PostConstruct;
 import java.util.HashSet;
@@ -10,25 +11,29 @@ import java.util.Set;
 
 @Component
 public class Initializer {
-    private final UserService userService;
+    private UserService userService;
+    private RoleService roleService;
 
-    public Initializer(UserService userService) {
+    public Initializer(UserService userService, RoleService roleService) {
         this.userService = userService;
+        this.roleService = roleService;
     }
 
     @PostConstruct
     public void init() {
+        Role role1 = new Role("ROLE_USER");
+        Role role2 = new Role("ROLE_ADMIN");
 
-        Set<Role> adminRoles = new HashSet<>();
-        Role userRole = new Role("ROLE_USER");
-        Role adminRole = new Role("ROLE_ADMIN");
+        roleService.add(role1);
+        roleService.add(role2);
 
-        User admin = new User("Ivan", "Ivanov", "ivanov@mail.ru", "admin", adminRoles);
+        Set<Role> roleAdmin = new HashSet<>();
+        Set<Role> roleUser = new HashSet<>();
+        roleUser.add(role1);
+        roleAdmin.add(role2);
 
-        adminRoles.add(userRole);
-        adminRoles.add(adminRole);
-        admin.setRoles(adminRoles);
+        User admin = new User("admin", "ivanov@mail.ru", "Ivan", "Ivanov", 40, roleAdmin);
 
-        userService.saveUser(admin);
+        userService.add(admin);
     }
 }
